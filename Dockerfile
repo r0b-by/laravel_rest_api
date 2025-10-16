@@ -21,6 +21,13 @@ RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 # Set permission supaya web server dapat menulis storage dan cache
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
+# Ubah DocumentRoot Apache ke folder public Laravel
+RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
+RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/apache2.conf
+
+# Enable mod_rewrite (penting untuk routing Laravel)
+RUN a2enmod rewrite
+
 # Expose port 80 untuk HTTP
 EXPOSE 80
 
