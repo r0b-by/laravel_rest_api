@@ -1,27 +1,28 @@
+# Gunakan base image PHP 8.2 dengan Apache
 FROM php:8.2-apache
 
-# Install dependencies
+# Install dependencies dan ekstensi PHP yang dibutuhkan Laravel
 RUN apt-get update && apt-get install -y \
     git zip unzip curl libsqlite3-dev libonig-dev libxml2-dev libzip-dev \
-    && docker-php-ext-install pdo pdo_sqlite zip
+    && docker-php-ext-install pdo pdo_sqlite zip mbstring xml
 
-# Install Composer
+# Install Composer dari official composer image
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Set working directory
+# Set working directory Laravel
 WORKDIR /var/www/html
 
-# Copy files
+# Copy semua file proyek ke container
 COPY . .
 
-# Install Laravel dependencies
+# Install dependencies Laravel via composer
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
-# Set Laravel permissions
+# Set permission supaya web server dapat menulis storage dan cache
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Expose port
+# Expose port 80 untuk HTTP
 EXPOSE 80
 
-# Start Laravel
-CMD php artisan serve --host=0.0.0.0 --port=80
+# Jalankan Apache di foreground (proses utama container)
+CMD ["apache2-foreground"]
